@@ -1,16 +1,16 @@
 
-//#define DIM                  2
-//#define PARTICLE_DISTANCE    0.025
-//#define DT                   0.001
-//#define OUTPUT_INTERVAL      20
+#define DIM                  2
+#define PARTICLE_DISTANCE    0.025
+#define DT                   0.001
+#define OUTPUT_INTERVAL      20
 
 
 /* for three-dimensional simulation */
 
-#define DIM                  3
-#define PARTICLE_DISTANCE    0.05
-#define DT                   0.003
-#define OUTPUT_INTERVAL      2
+//#define DIM                  3
+//#define PARTICLE_DISTANCE    0.05
+//#define DT                   0.003
+//#define OUTPUT_INTERVAL      2
 
 
 #define ARRAY_SIZE           9000
@@ -46,23 +46,25 @@
 #define PI 3.14159265359
 #define T 1  //T为墙壁横摇的周期
 
-static double AccelerationX[ARRAY_SIZE];
-static double AccelerationY[ARRAY_SIZE];
-static double AccelerationZ[ARRAY_SIZE];
-static int    ParticleType[ARRAY_SIZE];
-static double PositionX[ARRAY_SIZE];
-static double PositionY[ARRAY_SIZE];
-static double PositionZ[ARRAY_SIZE];
-static double VelocityX[ARRAY_SIZE];
-static double VelocityY[ARRAY_SIZE];
-static double VelocityZ[ARRAY_SIZE];
-static double Pressure[ARRAY_SIZE];
-static double ParticleNumberDensity[ARRAY_SIZE];
-static int    BoundaryCondition[ARRAY_SIZE];
-static double SourceTerm[ARRAY_SIZE];
-static int    FlagForCheckingBoundaryCondition[ARRAY_SIZE];
-static double CoefficientMatrix[ARRAY_SIZE * ARRAY_SIZE];
-static double MinimumPressure[ARRAY_SIZE];
+
+
+ double *AccelerationX;
+ double *AccelerationY;
+ double *AccelerationZ;							
+ int    *ParticleType;
+ double *PositionX;
+ double *PositionY;
+ double *PositionZ;
+ double *VelocityX;
+ double *VelocityY;
+ double *VelocityZ;
+ double *Pressure;
+ double *ParticleNumberDensity;
+ int    *BoundaryCondition;
+ double *SourceTerm;
+ int    *FlagForCheckingBoundaryCondition;
+ double CoefficientMatrix[ARRAY_SIZE * ARRAY_SIZE];//没处理
+ double *MinimumPressure;
 int    FileNumber;
 double Time;
 
@@ -81,6 +83,7 @@ static double THETA = 0.0;
 
 int    NumberOfParticles;
 int    NumberOfNonzeros;
+
 
 
 double Re_forParticleNumberDensity, Re2_forParticleNumberDensity;

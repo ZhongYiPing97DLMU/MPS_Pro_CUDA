@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+#define THREAD_NUM 256
 void printDeviceProp(const cudaDeviceProp& prop)
 {
     printf("Device Name : %s.\n", prop.name);
@@ -81,7 +82,63 @@ void initializeParticlePositionAndVelocity_for2dim(void) {
             y = PARTICLE_DISTANCE * (double)(iY);
             z = 0.0;
             flagOfParticleGeneration = OFF;
+           
+            if (((x > -4.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 4.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.0 - 4.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.7 + EPS))) {  /* dummy wall region */
+               
+                flagOfParticleGeneration = ON;
+            }
 
+            if (((x > -2.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 2.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.0 - 2.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.65 + EPS))) { /* wall region */
+               
+                flagOfParticleGeneration = ON;
+            }
+
+            //      if( ((x>-4.0*PARTICLE_DISTANCE+EPS)&&(x<=1.00+4.0*PARTICLE_DISTANCE+EPS))&&( (y>0.6-2.0*PARTICLE_DISTANCE+EPS )&&(y<=0.6+EPS)) ){  /* wall region */
+            //    ParticleType[i]=WALL;
+            //    flagOfParticleGeneration = ON;
+            //      }
+
+            if (((x > 0.0 + EPS) && (x <= 1.00 + EPS)) && (y > 0.0 + EPS) && (y < 0.6 + EPS)) {  /* empty region */
+                flagOfParticleGeneration = OFF;
+            }
+
+            if (((x > 0.0 + EPS) && (x <= 1.00 + EPS)) && ((y > 0.0 + EPS) && (y <= 0.4 + EPS))) {  /* fluid region */
+               
+                flagOfParticleGeneration = ON;
+            }
+            if (flagOfParticleGeneration == ON) {
+                i++;
+            }
+          
+        }
+    }
+   
+    NumberOfParticles = i;
+    ParticleType = new int[NumberOfParticles];
+    AccelerationX= new double[NumberOfParticles];
+    AccelerationY= new double[NumberOfParticles];
+    AccelerationZ= new double[NumberOfParticles];
+    PositionX= new double[NumberOfParticles];
+    PositionY= new double[NumberOfParticles];
+    PositionZ= new double[NumberOfParticles];
+    VelocityX= new double[NumberOfParticles];
+    VelocityY= new double[NumberOfParticles];
+    VelocityZ= new double[NumberOfParticles];
+    Pressure= new double[NumberOfParticles];
+    ParticleNumberDensity= new double[NumberOfParticles];
+    BoundaryCondition=new int[NumberOfParticles];
+    SourceTerm= new double[NumberOfParticles];
+    FlagForCheckingBoundaryCondition= new int[NumberOfParticles];
+    /*static double CoefficientMatrix[ARRAY_SIZE * ARRAY_SIZE];*/
+    MinimumPressure= new double[NumberOfParticles];
+    
+    i = 0;
+    for (iX = -4; iX < nX; iX++) {
+        for (iY = -4; iY < nY; iY++) {
+            x = PARTICLE_DISTANCE * (double)(iX);
+            y = PARTICLE_DISTANCE * (double)(iY);
+            z = 0.0;
+            flagOfParticleGeneration = OFF;
             if (((x > -4.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 4.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.0 - 4.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.7 + EPS))) {  /* dummy wall region */
                 ParticleType[i] = DUMMY_WALL;
                 flagOfParticleGeneration = ON;
@@ -112,7 +169,6 @@ void initializeParticlePositionAndVelocity_for2dim(void) {
             }
         }
     }
-    NumberOfParticles = i;
     for (i = 0; i < NumberOfParticles; i++) { VelocityX[i] = 0.0; VelocityY[i] = 0.0; VelocityZ[i] = 0.0; }
 
     //ParticleType[719] = 19;
@@ -128,6 +184,69 @@ void initializeParticlePositionAndVelocity_for3dim(void) {
     nX = (int)(1.0 / PARTICLE_DISTANCE) + 5;
     nY = (int)(0.7 / PARTICLE_DISTANCE) + 5;
     nZ = (int)(0.3 / PARTICLE_DISTANCE) + 5;
+    for (iX = -4; iX < nX; iX++) {
+        for (iY = -4; iY < nY; iY++) {
+            for (iZ = -4; iZ < nZ; iZ++) {
+                x = PARTICLE_DISTANCE * iX;
+                y = PARTICLE_DISTANCE * iY;
+                z = PARTICLE_DISTANCE * iZ;
+                flagOfParticleGeneration = OFF;
+
+                /* dummy wall region */
+                if ((((x > -4.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 4.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.0 - 4.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.7 + EPS))) && ((z > 0.0 - 4.0 * PARTICLE_DISTANCE + EPS) && (z <= 0.3 + 4.0 * PARTICLE_DISTANCE + EPS))) {
+                  
+                    flagOfParticleGeneration = ON;
+                }
+
+                /* wall region */
+                if ((((x > -2.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 2.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.0 - 2.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.6 + EPS))) && ((z > 0.0 - 2.0 * PARTICLE_DISTANCE + EPS) && (z <= 0.3 + 2.0 * PARTICLE_DISTANCE + EPS))) {
+                    
+                    flagOfParticleGeneration = ON;
+                }
+
+                /* wall region */
+                /*if ((((x > -4.0 * PARTICLE_DISTANCE + EPS) && (x <= 1.00 + 4.0 * PARTICLE_DISTANCE + EPS)) && ((y > 0.6 - 2.0 * PARTICLE_DISTANCE + EPS) && (y <= 0.6 + EPS))) && ((z > 0.0 - 4.0 * PARTICLE_DISTANCE + EPS) && (z <= 0.3 + 4.0 * PARTICLE_DISTANCE + EPS))) {
+                    ParticleType[i] = WALL;
+                    flagOfParticleGeneration = ON;
+                }*/
+
+                /* empty region */
+                if ((((x > 0.0 + EPS) && (x <= 1.00 + EPS)) && (y > 0.0 + EPS)) && (y < 0.5 + EPS) && ((z > 0.0 + EPS) && (z <= 0.3 + EPS))) {
+                    flagOfParticleGeneration = OFF;
+                }
+
+                /* fluid region */
+                if ((((x > 0.0 + EPS) && (x <= 0.25 + EPS)) && ((y > 0.0 + EPS) && (y < 0.5 + EPS))) && ((z > 0.0 + EPS) && (z <= 0.3 + EPS))) {
+                    
+                    flagOfParticleGeneration = ON;
+                }
+
+                if (flagOfParticleGeneration == ON) {
+                    i++;
+                }
+            }
+        }
+    }
+    NumberOfParticles = i;//2D num=1216 3D num=5652
+    ParticleType = new int[NumberOfParticles];
+    AccelerationX = new double[NumberOfParticles];
+    AccelerationY = new double[NumberOfParticles];
+    AccelerationZ = new double[NumberOfParticles];
+    PositionX = new double[NumberOfParticles];
+    PositionY = new double[NumberOfParticles];
+    PositionZ = new double[NumberOfParticles];
+    VelocityX = new double[NumberOfParticles];
+    VelocityY = new double[NumberOfParticles];
+    VelocityZ = new double[NumberOfParticles];
+    Pressure = new double[NumberOfParticles];
+    ParticleNumberDensity = new double[NumberOfParticles];
+    BoundaryCondition = new int[NumberOfParticles];
+    SourceTerm = new double[NumberOfParticles];
+    FlagForCheckingBoundaryCondition = new int[NumberOfParticles];
+    /*static double CoefficientMatrix[ARRAY_SIZE * ARRAY_SIZE];*/
+    MinimumPressure = new double[NumberOfParticles];
+
+    i = 0;
     for (iX = -4; iX < nX; iX++) {
         for (iY = -4; iY < nY; iY++) {
             for (iZ = -4; iZ < nZ; iZ++) {
@@ -174,7 +293,6 @@ void initializeParticlePositionAndVelocity_for3dim(void) {
             }
         }
     }
-    NumberOfParticles = i;//2D num=1216 3D num=5652
     for (i = 0; i < NumberOfParticles; i++) { VelocityX[i] = 0.0; VelocityY[i] = 0.0; VelocityZ[i] = 0.0; }
 }
 
@@ -243,13 +361,32 @@ double weight(double distance, double re) {
     }
     return weightij;
 }
+
+__global__ void g_CalculateGravity(double*Accelerationx, double* Accelerationy,double* Accelerationz,int* particletype)
+{
+    int tid = blockIdx.x * THREAD_NUM + threadIdx.x;
+    if (particletype[tid] == FLUID)
+    {
+        Accelerationx[tid] = GRAVITY_X;
+        Accelerationy[tid] = GRAVITY_Y;
+        Accelerationz[tid] = GRAVITY_Z;
+    }
+    else
+    {
+        Accelerationx[tid] = 0.0;
+        Accelerationy[tid] = 0.0;
+        Accelerationz[tid] = 0.0;
+    }
+
+}
 int main()
 {
     //CUDA ³õÊ¼»¯
     if (!InitCUDA()) {
         return 0;
     }
-    //cpu
+   
+    //CPU
     printf("\n*** START MPS-SIMULATION ***\n");
     if (DIM == 2) {
         initializeParticlePositionAndVelocity_for2dim();
@@ -259,4 +396,30 @@ int main()
     }
 
     calculateConstantParameter();
+    
+    
+    //CUDA 
+    int blocks_num = (NumberOfParticles + THREAD_NUM - 1) / THREAD_NUM;
+    double* d_AccelerationX, * d_AccelerationY, * d_AccelerationZ;
+    int* d_ParticleType;
+    cudaMalloc((void**)&d_AccelerationX, sizeof(double) * NumberOfParticles);
+    cudaMalloc((void**)&d_AccelerationY, sizeof(double) * NumberOfParticles);
+    cudaMalloc((void**)&d_AccelerationZ, sizeof(double) * NumberOfParticles);
+    cudaMalloc((void**)&d_ParticleType, sizeof(int) * NumberOfParticles);
+
+    cudaMemcpy(d_ParticleType, ParticleType, sizeof(int) * NumberOfParticles, cudaMemcpyHostToDevice);
+
+    g_CalculateGravity << <blocks_num, THREAD_NUM, 0 >> > (d_AccelerationX, d_AccelerationY, d_AccelerationZ,d_ParticleType);
+    
+    cudaMemcpy(AccelerationX, d_AccelerationX, sizeof(double) * NumberOfParticles, cudaMemcpyDeviceToHost);
+    cudaMemcpy(AccelerationY, d_AccelerationY, sizeof(double) * NumberOfParticles, cudaMemcpyDeviceToHost);
+    cudaMemcpy(AccelerationZ, d_AccelerationZ, sizeof(double) * NumberOfParticles, cudaMemcpyDeviceToHost);
+
+    cudaFree(d_AccelerationX);
+    cudaFree(d_AccelerationY);
+    cudaFree(d_AccelerationZ);
+    for (int i = 0; i < NumberOfParticles; i++)
+    {
+        cout << AccelerationY[i] << endl;
+    }
 }
